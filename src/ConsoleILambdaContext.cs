@@ -1,7 +1,7 @@
 ﻿using System;
 using Amazon.Lambda.Core;
 
-namespace LambdaHarnessApi
+namespace Test.LambdaHarness
 {
     class ConsoleILambdaContext : ILambdaContext
     {

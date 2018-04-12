@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
-using AuditTrailApi;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace LambdaHarnessApi
+namespace Test.LambdaHarness
 {
     public class LambdaHost : IDisposable
     {
         private readonly IWebHost _handle;
 
-        public LambdaHost(Function instance, Dictionary<string, string> environmentVariables)
+        public LambdaHost(object instance, Dictionary<string, string> environmentVariables)
         {
             foreach (var environmentVariable in environmentVariables)
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
-            
+
             _handle = WebHost.CreateDefaultBuilder()
                 .UseKestrel()
                 .Configure(app =>
@@ -39,14 +39,22 @@ namespace LambdaHarnessApi
                             headers.Add(requestHeader.Key, String.Join(';', requestHeader.Value));
                         }
 
-                        var response = instance.Handler(new APIGatewayProxyRequest
+
+                        /*
+                        [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+                        public async Task<APIGatewayProxyResponse> Handler(APIGatewayProxyRequest request, ILambdaContext context)
+                        */
+                        var request = new APIGatewayProxyRequest
                         {
                             Body = body,
                             Path = context.Request.Path.Value,
                             HttpMethod = context.Request.Method,
                             Headers = headers,
 
-                        }, new ConsoleILambdaContext()).Result;
+                        };
+                        var lambdaContext = new ConsoleILambdaContext();
+                        var result = instance.GetType().GetMethod("Handler").Invoke(instance, new object[] { request, lambdaContext });
+                        var response = ((Task<APIGatewayProxyResponse>)result).Result;
                         Console.WriteLine(response);
                         return null;
                     });

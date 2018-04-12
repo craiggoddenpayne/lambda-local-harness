@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageId>lambda-local-harness</PackageId>
+    <Authors>Craig Godden-Payne</Authors>
+    <Company>Craig Godden-Payne</Company>
+    <Product>lambda-local-harness</Product>
+    <AssemblyName>Test.LambdaHarness</AssemblyName>
+    <RootNamespace>Test.LambdaHarness</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="1.1.2" />
@@ -10,10 +16,8 @@
     <PackageReference Include="AWSSDK.CloudWatch" Version="3.3.6" />
     <PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.3.4.6" />
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.0.27" />
+    <PackageReference Include="microsoft.aspnetcore" Version="2.0.2" />
 
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AuditTrailApi\AuditTrailApi.csproj" />
   </ItemGroup>
 
 </Project>
