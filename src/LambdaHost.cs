@@ -3,18 +3,40 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
+using Amazon.Lambda.Core;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Test.LambdaHarness
 {
+    /// <summary>
+    /// Allows an AWS lambda to be hosted locally for local testing
+    /// </summary>
     public class LambdaHost : IDisposable
     {
         private readonly IWebHost _handle;
 
+
+        /// <summary>
+        /// Creates a self hosted api, which will call an AWS lambda function
+        /// </summary>
+        /// <param name="instance">An instance of the AWS lambda</param>
+        /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>
         public LambdaHost(object instance, Dictionary<string, string> environmentVariables)
+            :this(instance, environmentVariables, new ConsoleILambdaContext())
         {
+            
+        }
+
+        /// <summary>
+        /// Creates a self hosted api, which will call an AWS lambda function
+        /// </summary>
+        /// <param name="instance">An instance of the AWS lambda</param>
+        /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>
+        /// <param name="context">A custom lambda context</param>
+        public LambdaHost(object instance, Dictionary<string, string> environmentVariables, ILambdaContext lambdaContext)
+        {                   
             foreach (var environmentVariable in environmentVariables)
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
 
@@ -51,8 +73,7 @@ namespace Test.LambdaHarness
                             HttpMethod = context.Request.Method,
                             Headers = headers,
 
-                        };
-                        var lambdaContext = new ConsoleILambdaContext();
+                        };                        
                         var result = instance.GetType().GetMethod("Handler").Invoke(instance, new object[] { request, lambdaContext });
                         var response = ((Task<APIGatewayProxyResponse>)result).Result;
                         Console.WriteLine(response);
@@ -62,12 +83,19 @@ namespace Test.LambdaHarness
             _handle.Run();
         }
 
+
+        /// <summary>
+        /// Prevents the application from closing
+        /// </summary>
         public void Wait()
         {
             Console.WriteLine("Any key to exit...");
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// Disposes the api
+        /// </summary>
         public void Dispose()
         {
             _handle.Dispose();

@@ -3,7 +3,7 @@ using Amazon.Lambda.Core;
 
 namespace Test.LambdaHarness
 {
-    class ConsoleLambdaLogger : ILambdaLogger
+    internal class ConsoleLambdaLogger : ILambdaLogger
     {
         public void Log(string message)
         {

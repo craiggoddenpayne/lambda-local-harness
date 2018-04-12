@@ -3,7 +3,7 @@ using Amazon.Lambda.Core;
 
 namespace Test.LambdaHarness
 {
-    class ConsoleILambdaContext : ILambdaContext
+    internal class ConsoleILambdaContext : ILambdaContext
     {
         public string AwsRequestId { get; }
         public IClientContext ClientContext { get; }
