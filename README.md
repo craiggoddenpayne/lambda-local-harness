@@ -5,10 +5,12 @@ Wraps up an AWS lambda function, inside an API, to allow local testing.
 
 Supports Lambda functions, that are created to be run with an api gateway
 e.g. have the main function, similar to
+
 ```
         [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
         public async Task<APIGatewayProxyResponse> Handler(APIGatewayProxyRequest request, ILambdaContext context)
-``
+```
+
 
 ## Usage
 
@@ -16,6 +18,7 @@ Create a new console project, and install using nuget
 
 
 Instantiate your lambda function, such as 
+
 ```
             var function = new Function(new SnsPublisher(
                     new Settings()),
