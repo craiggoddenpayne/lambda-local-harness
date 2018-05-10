@@ -80,6 +80,15 @@ namespace Test.LambdaHarness
                             var task = (Task<APIGatewayProxyResponse>)result;
                             var response = task.Result;                            
                             Console.WriteLine(request.Path + "|" + response.StatusCode + "|" + response.Body);
+
+                            foreach (var header in response.Headers)
+                                context.Response.Headers.TryAdd(header.Key, header.Value);
+                            
+                            context.Response.StatusCode = response.StatusCode;                            
+                            if (response.Body != null)
+                                using (var streamWriter = new StreamWriter(context.Response.Body))
+                                    streamWriter.Write(response.Body);
+
                             return Task.FromResult(response);
                         }
                         catch (Exception ex)
