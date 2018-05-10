@@ -24,9 +24,9 @@ namespace Test.LambdaHarness
         /// <param name="instance">An instance of the AWS lambda</param>
         /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>
         public LambdaHost(object instance, Dictionary<string, string> environmentVariables)
-            :this(instance, environmentVariables, new ConsoleILambdaContext())
+            : this(instance, environmentVariables, new ConsoleILambdaContext())
         {
-            
+
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Test.LambdaHarness
         /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>
         /// <param name="context">A custom lambda context</param>
         public LambdaHost(object instance, Dictionary<string, string> environmentVariables, ILambdaContext lambdaContext)
-        {                   
+        {
             foreach (var environmentVariable in environmentVariables)
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
 
@@ -46,38 +46,47 @@ namespace Test.LambdaHarness
                 {
                     app.Run(context =>
                     {
-                        if (instance == null)
-                            throw new Exception("The instance of the function you passed, doesn't look right");
-
-                        string body;
-                        using (var sr = new StreamReader(context.Request.Body))
+                        try
                         {
-                            body = sr.ReadToEnd();
+                            if (instance == null)
+                                throw new Exception("The instance of the function you passed, doesn't look right");
+
+                            string body;
+                            using (var sr = new StreamReader(context.Request.Body))
+                            {
+                                body = sr.ReadToEnd();
+                            }
+
+                            Dictionary<string, string> headers = new Dictionary<string, string>();
+                            foreach (var requestHeader in context.Request.Headers)
+                            {
+                                headers.Add(requestHeader.Key, String.Join(';', requestHeader.Value));
+                            }
+
+
+                            /*
+                            [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+                            public async Task<APIGatewayProxyResponse> Handler(APIGatewayProxyRequest request, ILambdaContext context)
+                            */
+                            var request = new APIGatewayProxyRequest
+                            {
+                                Body = body,
+                                Path = context.Request.Path.Value,
+                                HttpMethod = context.Request.Method,
+                                Headers = headers,
+
+                            };
+                            var result = instance.GetType().GetMethod("Handler").Invoke(instance, new object[] { request, lambdaContext });
+                            var task = (Task<APIGatewayProxyResponse>)result;
+                            var response = task.Result;                            
+                            Console.WriteLine(request.Path + "|" + response.StatusCode + "|" + response.Body);
+                            return Task.FromResult(response);
                         }
-
-                        Dictionary<string, string> headers = new Dictionary<string, string>();
-                        foreach (var requestHeader in context.Request.Headers)
+                        catch (Exception ex)
                         {
-                            headers.Add(requestHeader.Key, String.Join(';', requestHeader.Value));
+                            Console.WriteLine(ex);
+                            throw;
                         }
-
-
-                        /*
-                        [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
-                        public async Task<APIGatewayProxyResponse> Handler(APIGatewayProxyRequest request, ILambdaContext context)
-                        */
-                        var request = new APIGatewayProxyRequest
-                        {
-                            Body = body,
-                            Path = context.Request.Path.Value,
-                            HttpMethod = context.Request.Method,
-                            Headers = headers,
-
-                        };                        
-                        var result = instance.GetType().GetMethod("Handler").Invoke(instance, new object[] { request, lambdaContext });
-                        var response = ((Task<APIGatewayProxyResponse>)result).Result;
-                        Console.WriteLine(response);
-                        return null;
                     });
                 }).Build();
             _handle.Run();
