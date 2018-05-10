@@ -79,13 +79,13 @@ namespace Test.LambdaHarness
                             var result = instance.GetType().GetMethod("Handler").Invoke(instance, new object[] { request, lambdaContext });
                             var task = (Task<APIGatewayProxyResponse>)result;
                             var response = task.Result;                            
-                            Console.WriteLine(request.Path + "|" + response.StatusCode + "|" + response.Body);
+                            Console.WriteLine(request.Path + "|" + response?.StatusCode + "|" + response?.Body);
 
-                            foreach (var header in response.Headers)
+                            foreach (var header in response?.Headers ?? new Dictionary<string,string>())
                                 context.Response.Headers.TryAdd(header.Key, header.Value);
                             
-                            context.Response.StatusCode = response.StatusCode;                            
-                            if (response.Body != null)
+                            context.Response.StatusCode = response?.StatusCode ?? 0;                            
+                            if (response?.Body != null)
                                 using (var streamWriter = new StreamWriter(context.Response.Body))
                                     streamWriter.Write(response.Body);
 
