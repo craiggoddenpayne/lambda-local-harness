@@ -32,6 +32,18 @@ namespace Test.LambdaHarness
         /// <summary>
         /// Creates a self hosted api, which will call an AWS lambda function, using the default Handler method.
         /// </summary>
+        /// <param name="methodName">The methodname of the function</param>
+        /// <param name="instance">An instance of the AWS lambda</param>
+        /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>                
+        public LambdaHost(object instance, string methodName, Dictionary<string, string> environmentVariables)
+            : this(instance, methodName, environmentVariables, new ConsoleILambdaContext())
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a self hosted api, which will call an AWS lambda function, using the default Handler method.
+        /// </summary>
         /// <param name="instance">An instance of the AWS lambda</param>
         /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>        
         /// <param name="lambdaContext">A custom lambda context</param>

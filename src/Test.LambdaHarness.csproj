@@ -8,7 +8,7 @@
     <Product>lambda-local-harness</Product>
     <AssemblyName>Test.LambdaHarness</AssemblyName>
     <RootNamespace>Test.LambdaHarness</RootNamespace>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="1.1.2" />
