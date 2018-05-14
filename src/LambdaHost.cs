@@ -30,12 +30,25 @@ namespace Test.LambdaHarness
         }
 
         /// <summary>
+        /// Creates a self hosted api, which will call an AWS lambda function, using the default Handler method.
+        /// </summary>
+        /// <param name="instance">An instance of the AWS lambda</param>
+        /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>        
+        /// <param name="lambdaContext">A custom lambda context</param>
+        public LambdaHost(object instance, Dictionary<string, string> environmentVariables, ILambdaContext lambdaContext)
+            : this(instance, "Handler", environmentVariables, lambdaContext)
+        {
+
+        }
+
+        /// <summary>
         /// Creates a self hosted api, which will call an AWS lambda function
         /// </summary>
         /// <param name="instance">An instance of the AWS lambda</param>
         /// <param name="environmentVariables">A dictionary, containing any environment variables that need to be set</param>
-        /// <param name="context">A custom lambda context</param>
-        public LambdaHost(object instance, Dictionary<string, string> environmentVariables, ILambdaContext lambdaContext)
+        /// <param name="methodName">The methodname of the function</param>
+        /// <param name="lambdaContext">A custom lambda context</param>
+        public LambdaHost(object instance, string methodName, Dictionary<string, string> environmentVariables, ILambdaContext lambdaContext)
         {
             foreach (var environmentVariable in environmentVariables)
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
@@ -76,15 +89,15 @@ namespace Test.LambdaHarness
                                 Headers = headers,
 
                             };
-                            var result = instance.GetType().GetMethod("Handler").Invoke(instance, new object[] { request, lambdaContext });
+                            var result = instance.GetType().GetMethod(methodName).Invoke(instance, new object[] { request, lambdaContext });
                             var task = (Task<APIGatewayProxyResponse>)result;
-                            var response = task.Result;                            
+                            var response = task.Result;
                             Console.WriteLine(request.Path + "|" + response?.StatusCode + "|" + response?.Body);
 
-                            foreach (var header in response?.Headers ?? new Dictionary<string,string>())
+                            foreach (var header in response?.Headers ?? new Dictionary<string, string>())
                                 context.Response.Headers.TryAdd(header.Key, header.Value);
-                            
-                            context.Response.StatusCode = response?.StatusCode ?? 0;                            
+
+                            context.Response.StatusCode = response?.StatusCode ?? 0;
                             if (response?.Body != null)
                                 using (var streamWriter = new StreamWriter(context.Response.Body))
                                     streamWriter.Write(response.Body);
