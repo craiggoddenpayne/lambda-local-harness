@@ -11,6 +11,7 @@ e.g. have the main function, similar to
 public async Task<APIGatewayProxyResponse> Handler(APIGatewayProxyRequest request, ILambdaContext context)
 ```
 
+You can now also override the method name.
 
 ## Usage
 
@@ -50,20 +51,13 @@ class Program
 {
         static void Main(string[] args)
         {
-                var function = new Function(
-                        new SnsPublisher(
-                                new Settings()),
-                                new TelemetryClient());
-                        
-                using (var host = new LambdaHost(function, new Dictionary<string, string>
-                {
-                        { "Environment", "local"},
-                        { "SnsTopic", "arn:aws:sns:eu-west-2:00000000:marketing-opt-out-messages"},
-                        { "AppInsightsInstrumentationKey", "NOT SET"}
-                }))
-                {
-                        host.Wait();
-                }
-        }
+            Ioc.IocSetup();
+            var function = new Function(Ioc.Resolve<IApplicationValidator>(), new TelemetryClient());
+
+            using (var host = new LambdaHost(function, "FullApplication", new Dictionary<string, string> {{"AppInsightsInstrumentationKey", "NOT SET"}}))
+            {
+                host.Wait();
+            }
+      }
 }
 ```
